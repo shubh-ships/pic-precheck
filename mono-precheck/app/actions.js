@@ -2,10 +2,6 @@
 
 import { runPrecheck, searchChemical, searchChemicalOptions } from "../lib/precheck";
 
-// Azure SQL serverless can take longer than Vercel's default function timeout to
-// resume from auto-pause; raise the cap so the pool's connection wait isn't cut short.
-export const maxDuration = 60;
-
 export async function searchChemicalAction(query) {
   if (!query?.trim()) return { error: "Enter a CAS number or chemical name." };
   try { return await searchChemical(query.trim()); }
