@@ -10,14 +10,14 @@ const MODE_COPY = {
     title: "Export PIC Precheck",
     countryLabel: "Importing Country",
     countryPlaceholder: "Select importing country",
-    emptyStateBody: "Enter a CAS number, select the importing country and choose the intended use category.",
+    emptyStateBody: "Enter a CAS number or chemical name, select the importing country and choose the intended use category.",
     consentBody: "The selected chemical and importing country require explicit consent under the current PIC data and rules.",
   },
   import: {
     title: "Import PIC Precheck",
     countryLabel: "Exporting Country",
     countryPlaceholder: "Select exporting country",
-    emptyStateBody: "Enter a CAS number, select the exporting country and choose the intended use category.",
+    emptyStateBody: "Enter a CAS number or chemical name, select the exporting country and choose the intended use category.",
     consentBody: "The selected chemical and exporting country require explicit consent under the current PIC data and rules.",
   },
 };
@@ -84,10 +84,10 @@ export default function PrecheckForm({ countries, categories }) {
       <section className="card">
         <div className="form-grid">
           <div className="field">
-            <label>Chemical lookup by CAS Number</label>
+            <label>Chemical lookup by CAS Number or Name</label>
             <div className="combobox">
               <div className="search-wrap">
-                <input value={cas} onChange={(event) => { setCas(event.target.value); setShowCasOptions(true); resetAfterInput(); }} onFocus={() => setShowCasOptions(true)} onBlur={() => setTimeout(() => setShowCasOptions(false), 150)} onKeyDown={(event) => event.key === "Enter" && search()} placeholder="Type to search CAS numbers" autoComplete="off" />
+                <input value={cas} onChange={(event) => { setCas(event.target.value); setShowCasOptions(true); resetAfterInput(); }} onFocus={() => setShowCasOptions(true)} onBlur={() => setTimeout(() => setShowCasOptions(false), 150)} onKeyDown={(event) => event.key === "Enter" && search()} placeholder="Search by CAS number or chemical name" autoComplete="off" />
                 <button onClick={() => search()} disabled={isPending}>{isPending ? "Working…" : "Search"}</button>
               </div>
               {showCasOptions && casOptions.length > 0 && <ul className="combobox-options">

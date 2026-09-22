@@ -15,24 +15,25 @@ export async function getMasterData() {
   return { countries: countries.recordset, categories: categories.recordset };
 }
 
-export async function searchCasOptions(term) {
+export async function searchChemicalOptions(term) {
   const trimmed = term?.trim();
   if (!trimmed || trimmed.length < 2) return [];
   const chemicals = await chemicalPool();
-  const options = await chemicals.request().input("term", sql.NVarChar, `${trimmed}%`).query(`
+  const options = await chemicals.request().input("prefix", sql.NVarChar, `${trimmed}%`).input("contains", sql.NVarChar, `%${trimmed}%`).query(`
     SELECT TOP 20 cas_number AS casNumber, scientific_name_english AS scientificName
-    FROM mas.chemicals WHERE cas_number LIKE @term ORDER BY cas_number;
+    FROM mas.chemicals WHERE cas_number LIKE @prefix OR scientific_name_english LIKE @contains
+    ORDER BY CASE WHEN cas_number LIKE @prefix THEN 0 ELSE 1 END, cas_number;
   `);
   return options.recordset;
 }
 
-export async function searchChemicalByCas(cas) {
+export async function searchChemical(query) {
   const chemicals = await chemicalPool();
-  const search = await chemicals.request().input("cas", sql.NVarChar, cas).query(`
+  const search = await chemicals.request().input("query", sql.NVarChar, query).query(`
     SELECT chemical_id AS chemicalId, cas_number AS casNumber, scientific_name_english AS scientificName
-    FROM mas.chemicals WHERE cas_number = @cas ORDER BY chemical_id;
+    FROM mas.chemicals WHERE cas_number = @query OR scientific_name_english = @query ORDER BY chemical_id;
   `);
-  if (search.recordset.length !== 1) return search.recordset.length ? { error: "Multiple chemicals found. Enter the exact CAS number." } : { error: "No chemical found for this CAS number." };
+  if (search.recordset.length !== 1) return search.recordset.length ? { error: "Multiple chemicals found. Pick one from the suggestions, or enter the exact CAS number." } : { error: "No chemical found for this CAS number or name." };
 
   const selected = search.recordset[0];
   const pics = await picPool();
