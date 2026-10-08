@@ -2,6 +2,10 @@ import "server-only";
 import { databases, getPool, sql } from "./db";
 import { getFraName } from "./fra-rules";
 
+// Thrown only for expected, user-facing validation/not-found cases. Server actions
+// show this message as-is; anything else (DB/driver errors) is logged, not shown.
+export class PrecheckValidationError extends Error {}
+
 const isoDate = (value) => (value instanceof Date ? value.toISOString() : value ?? null);
 const chemicalPool = () => getPool(databases.chemical);
 const picPool = () => getPool(databases.pic);
@@ -46,7 +50,7 @@ export async function searchChemical(query) {
 
 export async function runPrecheck({ chemicalId, countryId, categoryId }) {
   const [chemicalIdNumber, countryIdNumber, categoryIdNumber] = [chemicalId, countryId, categoryId].map(Number);
-  if ([chemicalIdNumber, countryIdNumber, categoryIdNumber].some((id) => !Number.isInteger(id) || id <= 0)) throw new Error("Chemical, country and category are required.");
+  if ([chemicalIdNumber, countryIdNumber, categoryIdNumber].some((id) => !Number.isInteger(id) || id <= 0)) throw new PrecheckValidationError("Chemical, country and category are required.");
 
   const [chemicals, pics] = await Promise.all([chemicalPool(), picPool()]);
   const [chemicalResult, categoryResult, annexIdsResult, fraResult, responseResult, partyResult] = await Promise.all([
@@ -60,8 +64,8 @@ export async function runPrecheck({ chemicalId, countryId, categoryId }) {
 
   const chemical = chemicalResult.recordset[0];
   const selectedCategory = categoryResult.recordset[0];
-  if (!chemical) throw new Error("Chemical not found.");
-  if (!selectedCategory) throw new Error("Invalid or inactive PIC product category.");
+  if (!chemical) throw new PrecheckValidationError("Chemical not found.");
+  if (!selectedCategory) throw new PrecheckValidationError("Invalid or inactive PIC product category.");
 
   // pic and chemical_db are separate Azure SQL databases; cross-database joins aren't
   // supported there, so the category names are looked up from chemical_db separately.

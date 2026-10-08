@@ -37,7 +37,7 @@ export default function PrecheckForm({ countries, categories }) {
   const status = useMemo(() => result?.explicitConsentRequired ? "consent" : "clear", [result]);
   const copy = MODE_COPY[mode];
 
-  function switchMode(nextMode) { setMode(nextMode); setResult(null); }
+  function switchMode(nextMode) { setMode(nextMode); resetAll(); }
 
   useEffect(() => {
     const term = cas.trim();

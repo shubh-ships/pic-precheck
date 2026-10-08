@@ -11,6 +11,15 @@ export default async function Page() {
     const { countries, categories } = await getMasterData();
     return <PrecheckForm countries={countries} categories={categories} />;
   } catch (error) {
-    return <main className="startup-error"><h1>PIC Precheck is not connected</h1><p>{error.message}</p><p>Add the Azure SQL settings from <code>.env.example</code> to <code>.env.local</code>, then restart the app.</p></main>;
+    // Full detail (hostnames, driver errors, stack) goes to server logs only —
+    // the page itself must never leak connection internals to visitors.
+    console.error("PIC Precheck: failed to load master data", error);
+    return (
+      <main className="startup-error">
+        <h1>PIC Precheck is temporarily unavailable</h1>
+        <p>We couldn&apos;t reach the database right now. Please try again shortly.</p>
+        <p>If this continues, contact the site administrator.</p>
+      </main>
+    );
   }
 }
